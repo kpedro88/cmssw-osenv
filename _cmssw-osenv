@@ -1,0 +1,75 @@
+#!/bin/bash
+SINGULARITY_OPTS=
+while [ "$#" != 0 ]; do
+  case "$1" in
+    -h|--help)
+      echo "Usage: $0 [-h|--help] [singularity-options] [--command-to-run <command to run>]"
+      echo "Environment variable UNPACK_IMAGE can be set to point to either valid docker/singularity image or unpacked image path"
+      exit 0
+      ;;
+    --command-to-run)
+      shift
+      break
+      ;;
+    *)
+      SINGULARITY_OPTS="${SINGULARITY_OPTS} $1"
+      shift
+      ;;
+  esac
+done
+
+if [ "X${UNPACKED_IMAGE}" = "X" ] ;then
+  
+  UNPACKED_PATH="/cvmfs/unpacked.cern.ch/registry.hub.docker.com"
+  SCRIPT_NAME=$(basename $0)
+  DOCKER_NAME=
+
+  case $SCRIPT_NAME in
+    cmssw-cc6)
+      DOCKER_NAME="cmssw/slc6:latest"
+      ;;
+    cmssw-cc7|cmssw-slc6)
+      DOCKER_NAME="$(echo $SCRIPT_NAME | sed 's|-|/|'):latest"
+      ;;
+    *) 
+      echo "ERROR: Unknown unpacked image: $(echo $SCRIPT_NAME | sed 's|-|/|'):latest or cmssw/$(echo $SCRIPT_NAME | sed 's|-|:|')"
+      exit 1
+      ;;
+  esac
+  UNPACKED_IMAGE="${UNPACKED_PATH}/${DOCKER_NAME}"
+  ls /cvmfs/unpacked.cern.ch >/dev/null 2>&1 || true
+  if [ ! -e ${UNPACKED_IMAGE} ] ; then
+    echo "ERROR: Unable to find ${UNPACKED_IMAGE}"
+    exit 1
+  fi
+fi
+
+MOUNT_POINTS=""
+if [ "X${SINGULARITY_BINDPATH}" != "X" ] ; then MOUNT_POINTS="${SINGULARITY_BINDPATH}" ; fi
+if [ -d /cvmfs ] ; then
+  for repo in cms cms-ib grid projects unpacked ; do
+    ls /cvmfs/${repo}.cern.ch >/dev/null 2>&1 || true
+  done
+  MOUNT_POINTS="${MOUNT_POINTS},/cvmfs,/cvmfs/grid.cern.ch/etc/grid-security/vomses:/etc/vomses,/cvmfs/grid.cern.ch/etc/grid-security:/etc/grid-security"
+fi
+for dir in /etc/tnsnames.ora /eos /build /data ; do
+  if [ -e $dir ] ; then MOUNT_POINTS="${MOUNT_POINTS},${dir}" ; fi
+done
+
+if [ -e $UNPACKED_IMAGE ] ; then
+  VALID_MOUNT_POINTS=""
+  for dir in $(echo $MOUNT_POINTS | tr ',' '\n') ; do
+    bind_dir=$(echo $dir | sed 's|.*:||')
+    if [ -e ${UNPACKED_IMAGE}/${bind_dir} ] ; then
+      VALID_MOUNT_POINTS="${VALID_MOUNT_POINTS},${dir}"
+    fi
+  done
+  export SINGULARITY_BINDPATH=$(echo ${VALID_MOUNT_POINTS} | sed 's|^,||')
+fi
+CMS_ENV=""
+if [ -e /cvmfs/cms.cern.ch/cmsset_default.sh ] ; then CMS_ENV="source /cvmfs/cms.cern.ch/cmsset_default.sh;"; fi
+if [ $# -eq 0 ] ; then
+  singularity -s exec ${SINGULARITY_OPTS} $UNPACKED_IMAGE sh -c "/bin/bash"
+else
+  singularity -s exec  ${SINGULARITY_OPTS} $UNPACKED_IMAGE sh -c "$CMS_ENV $@"
+fi
