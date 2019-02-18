@@ -46,6 +46,7 @@ fi
 
 MOUNT_POINTS=""
 if [ "X${SINGULARITY_BINDPATH}" != "X" ] ; then MOUNT_POINTS="${SINGULARITY_BINDPATH}" ; fi
+if [ -d /afs ] ; then MOUNT_POINTS="${MOUNT_POINTS},/afs" ; fi
 if [ -d /cvmfs ] ; then
   for repo in cms cms-ib grid projects unpacked ; do
     ls /cvmfs/${repo}.cern.ch >/dev/null 2>&1 || true
@@ -67,6 +68,7 @@ if [ -e $UNPACKED_IMAGE ] ; then
   export SINGULARITY_BINDPATH=$(echo ${VALID_MOUNT_POINTS} | sed 's|^,||')
 fi
 PREFIX_CMD='true'
+SINGULARITY_OPTS="${SINGULARITY_OPTS} --home ${HOME}:/home/$(whoami)"
 if [ -e /cvmfs/cms.cern.ch/cmsset_default.sh ] ; then PREFIX_CMD='source /cvmfs/cms.cern.ch/cmsset_default.sh'; fi
 if [[ "$@" = "" ]] ; then
   singularity -s exec ${SINGULARITY_OPTS} $UNPACKED_IMAGE sh -c "/bin/bash; $PREFIX_CMD"
