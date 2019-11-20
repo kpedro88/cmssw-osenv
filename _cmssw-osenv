@@ -29,7 +29,7 @@ if [ "X${UNPACKED_IMAGE}" = "X" ] ;then
   DOCKER_NAME=
 
   case $SCRIPT_NAME in
-    cmssw-cc7|cmssw-slc6)
+    cmssw-cc*|cmssw-slc*)
       DOCKER_NAME="$(echo $SCRIPT_NAME | sed 's|-|/|'):latest"
       ;;
     *) 
