@@ -86,7 +86,7 @@ if [ -e $UNPACKED_IMAGE ] ; then
   VALID_MOUNT_POINTS=""
   for dir in $(echo $MOUNT_POINTS | tr ',' '\n' | sort | uniq) ; do
     bind_dir=$(echo $dir | sed 's|.*:||')
-    if [ -e ${UNPACKED_IMAGE}/${bind_dir} ] ; then
+    if [ -d ${UNPACKED_IMAGE}/${bind_dir} ] ; then
       VALID_MOUNT_POINTS="${VALID_MOUNT_POINTS},${dir}"
     fi
   done
