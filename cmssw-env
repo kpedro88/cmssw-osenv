@@ -46,13 +46,10 @@ fi
 for dir in /etc/tnsnames.ora /eos /build /data ; do
   if [ -e $dir ] ; then MOUNT_POINTS="${MOUNT_POINTS},${dir}" ; fi
 done
-USER_HOME="/home/$(whoami)"
-SINGULARITY_OPTS="${SINGULARITY_OPTS} --home ${HOME}:${USER_HOME}"
 OLD_CMSOS=$(echo ${SCRAM_ARCH} | cut -d_ -f1,2)
 if [ -e ${THISDIR}/../cmsset_default.sh ] ; then
   CMD_TO_RUN="[ \"${OLD_CMSOS}\" != \"\$(${THISDIR}/cmsos)\" ] && export SCRAM_ARCH=""; source ${THISDIR}/../cmsset_default.sh; ${CMD_TO_RUN}"
 fi
-CMD_TO_RUN="export HOME=${USER_HOME}; ${CMD_TO_RUN}"
 
 if [ "X${UNPACKED_IMAGE}" = "X" ] ;then
   if [ "${CMS_IMAGE}" = "${BASE_SCRIPT}" ] ; then
