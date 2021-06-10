@@ -89,4 +89,4 @@ if [ -e $UNPACKED_IMAGE ] ; then
   done
   export SINGULARITY_BINDPATH=$(echo ${VALID_MOUNT_POINTS} | sed 's|^,||')
 fi
-singularity -s exec ${SINGULARITY_OPTS} $UNPACKED_IMAGE sh -c "$CMD_TO_RUN"
+singularity -s exec ${SINGULARITY_OPTS} $UNPACKED_IMAGE "$CMD_TO_RUN"
