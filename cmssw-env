@@ -1,7 +1,7 @@
 #!/bin/bash -e
 SINGULARITY_OPTS=
 BASE_SCRIPT="cmssw-env"
-CMD_TO_RUN="/bin/bash"
+CMD_TO_RUN=("/bin/bash")
 CMS_IMAGE=$(basename $0)
 THISDIR=$(dirname $0)
 while [ "$#" != 0 ]; do
@@ -24,7 +24,7 @@ while [ "$#" != 0 ]; do
       ;;
     --command-to-run|--)
       shift
-      CMD_TO_RUN="$@"
+      CMD_TO_RUN=("$@")
       break
       ;;
     *)
@@ -48,7 +48,7 @@ for dir in /etc/tnsnames.ora /eos /build /data ; do
 done
 OLD_CMSOS=$(echo ${SCRAM_ARCH} | cut -d_ -f1,2)
 if [ -e ${THISDIR}/../cmsset_default.sh ] ; then
-  CMD_TO_RUN="[ \"${OLD_CMSOS}\" != \"\$(${THISDIR}/cmsos)\" ] && export SCRAM_ARCH=""; source ${THISDIR}/../cmsset_default.sh; ${CMD_TO_RUN}"
+  CMD_TO_RUN=("[ \"${OLD_CMSOS}\" != \"\$(${THISDIR}/cmsos)\" ] && export SCRAM_ARCH=""; source ${THISDIR}/../cmsset_default.sh;" "${CMD_TO_RUN}")
 fi
 
 if [ "X${UNPACKED_IMAGE}" = "X" ] ;then
@@ -89,4 +89,4 @@ if [ -e $UNPACKED_IMAGE ] ; then
   done
   export SINGULARITY_BINDPATH=$(echo ${VALID_MOUNT_POINTS} | sed 's|^,||')
 fi
-singularity -s exec ${SINGULARITY_OPTS} $UNPACKED_IMAGE sh -c "$CMD_TO_RUN"
+singularity -s exec ${SINGULARITY_OPTS} $UNPACKED_IMAGE "${CMD_TO_RUN[@]}"
