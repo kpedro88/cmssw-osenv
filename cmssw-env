@@ -48,7 +48,9 @@ for dir in /etc/tnsnames.ora /eos /build /data ; do
 done
 OLD_CMSOS=$(echo ${SCRAM_ARCH} | cut -d_ -f1,2)
 if [ -e ${THISDIR}/../cmsset_default.sh ] ; then
-  CMD_TO_RUN=("[ \"${OLD_CMSOS}\" != \"\$(${THISDIR}/cmsos)\" ] && export SCRAM_ARCH=""; source ${THISDIR}/../cmsset_default.sh;" "${CMD_TO_RUN}")
+  # necessary to preserve quotes/grouping in original CMD_TO_RUN when running multiple commands through sh -c
+  printf -v CMD_STR '%q ' "${CMD_TO_RUN[@]}"
+  CMD_TO_RUN=("[ \"${OLD_CMSOS}\" != \"\$(${THISDIR}/cmsos)\" ] && export SCRAM_ARCH=""; source ${THISDIR}/../cmsset_default.sh; ${CMD_STR}")
 fi
 
 if [ "X${UNPACKED_IMAGE}" = "X" ] ;then
@@ -89,4 +91,4 @@ if [ -e $UNPACKED_IMAGE ] ; then
   done
   export SINGULARITY_BINDPATH=$(echo ${VALID_MOUNT_POINTS} | sed 's|^,||')
 fi
-singularity -s exec ${SINGULARITY_OPTS} $UNPACKED_IMAGE "${CMD_TO_RUN[@]}"
+singularity -s exec ${SINGULARITY_OPTS} $UNPACKED_IMAGE sh -c "${CMD_TO_RUN[@]}"
