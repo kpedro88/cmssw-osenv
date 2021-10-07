@@ -62,14 +62,14 @@ if [ "X${UNPACKED_IMAGE}" = "X" ] ;then
     cmssw-cc6) CMS_IMAGE=cmssw-slc6;;
   esac
   DOCKER_NAME="$(echo ${CMS_IMAGE} | sed 's|-|/|')"
-  UNAME_M="$(uname -m)"
-  if [ "${UNAME_M}" = "x86_64" ] ; then UNAME_M="${UNAME_M} amd64" ; fi
+  UNAME_M=":$(uname -m)"
+  if [ "${UNAME_M}" = ":x86_64" ] ; then UNAME_M="${UNAME_M} :amd64" ; fi
   UNPACK_DIRS="/cvmfs/unpacked.cern.ch/registry.hub.docker.com"
   for dir in ${UNPACK_DIRS} ; do
     ls ${dir} >/dev/null 2>&1 || true
-    for tag in ${UNAME_M} latest ; do
-      if [ -e "${dir}/${DOCKER_NAME}:${tag}" ] ; then
-        UNPACKED_IMAGE="${dir}/${DOCKER_NAME}:${tag}"
+    for tag in "" ${UNAME_M} :latest ; do
+      if [ -e "${dir}/${DOCKER_NAME}${tag}" ] ; then
+        UNPACKED_IMAGE="${dir}/${DOCKER_NAME}${tag}"
         break
       fi
     done
