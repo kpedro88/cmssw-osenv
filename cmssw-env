@@ -63,7 +63,6 @@ if [ "X${UNPACKED_IMAGE}" = "X" ] ;then
   esac
   DOCKER_NAME="$(echo ${CMS_IMAGE} | sed 's|-|/|')"
   UNAME_M=":$(uname -m)"
-  if [ "${UNAME_M}" = ":x86_64" ] ; then UNAME_M="${UNAME_M} :amd64" ; fi
   UNPACK_DIRS="/cvmfs/unpacked.cern.ch/registry.hub.docker.com"
   for dir in ${UNPACK_DIRS} ; do
     ls ${dir} >/dev/null 2>&1 || true
