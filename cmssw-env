@@ -4,15 +4,17 @@ BASE_SCRIPT="cmssw-env"
 CMD_TO_RUN=("/bin/bash")
 CMS_IMAGE=$(basename $0)
 THISDIR=$(dirname $0)
+IGNORE_MOUNTS=""
 while [ "$#" != 0 ]; do
   case "$1" in
     -h|--help)
       HELP_ARG=""
       if [ "${CMS_IMAGE}" = "${BASE_SCRIPT}" ] ; then HELP_ARG="[--cmsos <image>] "; fi
-      echo "Usage: $0 [-h|--help] ${HELP_ARG}[singularity-options] [--command-to-run|-- <command to run>]"
+      echo "Usage: $0 [-h|--help] ${HELP_ARG}[singularity-options] [--ignore-mount <dir1[,dir2[,...]]>] [--command-to-run|-- <command to run>]"
       echo "Environment variable UNPACKED_IMAGE can be set to point to either valid docker/singularity image or unpacked image path"
       exit 0
       ;;
+    --ignore-mount) IGNORE_MOUNTS=$(echo $2 | tr ',' ' '); shift; shift ;;
     --cmsos)
       if [ "${CMS_IMAGE}" != "${BASE_SCRIPT}" ] ; then
         echo "ERROR: Unknown option '--cmsos' found. This option is only valid for ${BASE_SCRIPT} command."
@@ -83,6 +85,10 @@ fi
 if [ -e $UNPACKED_IMAGE ] ; then
   VALID_MOUNT_POINTS=""
   for dir in $(echo $MOUNT_POINTS | tr ',' '\n' | sort | uniq) ; do
+    if [ "${IGNORE_MOUNTS}" != "" ] ; then
+      hdir=$(echo $dir | sed 's|:.*||')
+      if [ $(echo " ${IGNORE_MOUNTS} " | grep " $hdir " | wc -l) -gt 0 ] ; then continue ; fi
+    fi
     bind_dir=$(echo $dir | sed 's|.*:||')
     if [ -e ${UNPACKED_IMAGE}/${bind_dir} ] ; then
       VALID_MOUNT_POINTS="${VALID_MOUNT_POINTS},${dir}"
