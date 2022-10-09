@@ -1,16 +1,22 @@
 #!/bin/bash -e
-SINGULARITY_OPTS=
+EXTRA_OPTS=
 BASE_SCRIPT="cmssw-env"
 CMD_TO_RUN=("/bin/bash")
 CMS_IMAGE=$(basename $0)
 THISDIR=$(dirname $0)
 IGNORE_MOUNTS=""
+CONTAINER_CMD="singularity"
+BINDPATH_ENV="SINGULARITY_BINDPATH"
+if which apptainer >/dev/null 2>&1 ; then
+  CONTAINER_CMD="apptainer"
+  BINDPATH_ENV="APPTAINER_BINDPATH"
+fi
 while [ "$#" != 0 ]; do
   case "$1" in
     -h|--help)
       HELP_ARG=""
       if [ "${CMS_IMAGE}" = "${BASE_SCRIPT}" ] ; then HELP_ARG="[--cmsos <image>] "; fi
-      echo "Usage: $0 [-h|--help] ${HELP_ARG}[singularity-options] [--ignore-mount <dir1[,dir2[,...]]>] [--command-to-run|-- <command to run>]"
+      echo "Usage: $0 [-h|--help] ${HELP_ARG}[extra-options] [--ignore-mount <dir1[,dir2[,...]]>] [--command-to-run|-- <command to run>]"
       echo "Environment variable UNPACKED_IMAGE can be set to point to either valid docker/singularity image or unpacked image path"
       exit 0
       ;;
@@ -30,7 +36,7 @@ while [ "$#" != 0 ]; do
       break
       ;;
     *)
-      SINGULARITY_OPTS="${SINGULARITY_OPTS} $1"
+      EXTRA_OPTS="${EXTRA_OPTS} $1"
       shift
       ;;
   esac
@@ -94,6 +100,6 @@ if [ -e $UNPACKED_IMAGE ] ; then
       VALID_MOUNT_POINTS="${VALID_MOUNT_POINTS},${dir}"
     fi
   done
-  export SINGULARITY_BINDPATH=$(echo ${VALID_MOUNT_POINTS} | sed 's|^,||')
+  export ${BINDPATH_ENV}=$(echo ${VALID_MOUNT_POINTS} | sed 's|^,||')
 fi
-singularity -s exec ${SINGULARITY_OPTS} $UNPACKED_IMAGE sh -c "${CMD_TO_RUN[@]}"
+${CONTAINER_CMD} -s exec ${EXTRA_OPTS} $UNPACKED_IMAGE sh -c "${CMD_TO_RUN[@]}"
