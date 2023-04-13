@@ -7,9 +7,11 @@ THISDIR=$(dirname $0)
 IGNORE_MOUNTS=""
 CONTAINER_CMD="singularity"
 BINDPATH_ENV="SINGULARITY_BINDPATH"
+MOUNT_POINTS="${SINGULARITY_BINDPATH}"
 if which apptainer >/dev/null 2>&1 ; then
   CONTAINER_CMD="apptainer"
   BINDPATH_ENV="APPTAINER_BINDPATH"
+  MOUNT_POINTS="${APPTAINER_BINDPATH}"
 fi
 while [ "$#" != 0 ]; do
   case "$1" in
@@ -42,15 +44,13 @@ while [ "$#" != 0 ]; do
   esac
 done
 
-MOUNT_POINTS=""
-if [ "X${SINGULARITY_BINDPATH}" != "X" ] ; then MOUNT_POINTS="${SINGULARITY_BINDPATH}" ; fi
 if [ -d /cvmfs ] ; then
   for repo in cms cms-ib grid projects unpacked ; do
     ls /cvmfs/${repo}.cern.ch >/dev/null 2>&1 || true
   done
   MOUNT_POINTS="${MOUNT_POINTS},/cvmfs,/cvmfs/grid.cern.ch/etc/grid-security/vomses:/etc/vomses,/cvmfs/grid.cern.ch/etc/grid-security:/etc/grid-security"
 fi
-for dir in /etc/tnsnames.ora /eos /build /data /afs /pool ; do
+for dir in /etc/tnsnames.ora /eos /build /data /afs /pool $(/bin/pwd -P | cut -d/ -f1-2) ; do
   [ ! -e $dir ] || MOUNT_POINTS="${MOUNT_POINTS},${dir}"
 done
 OLD_CMSOS=$(echo ${SCRAM_ARCH} | cut -d_ -f1,2)
