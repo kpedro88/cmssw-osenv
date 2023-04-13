@@ -66,8 +66,9 @@ if [ "X${UNPACKED_IMAGE}" = "X" ] ;then
     exit 1
   fi
   case $CMS_IMAGE in
-    cmssw-cc6|cmssw-slc6) CMS_IMAGE=cmssw-el6;;
-    cmssw-cc7) CMS_IMAGE=cmssw-el7;;
+    cmssw-el5)            CMS_IMAGE=cmssw-slc5 ;;
+    cmssw-cc6|cmssw-slc6) CMS_IMAGE=cmssw-el6  ;;
+    cmssw-cc7)            CMS_IMAGE=cmssw-el7  ;;
   esac
   DOCKER_NAME="$(echo ${CMS_IMAGE} | sed 's|-|/|')"
   UNAME_M=":$(uname -m)"
