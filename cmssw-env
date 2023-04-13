@@ -62,11 +62,12 @@ fi
 
 if [ "X${UNPACKED_IMAGE}" = "X" ] ;then
   if [ "${CMS_IMAGE}" = "${BASE_SCRIPT}" ] ; then
-    echo "ERROR: Missing --cmsos <image> command-line argument. Usage $0 --cmsos cc7"
+    echo "ERROR: Missing --cmsos <image> command-line argument. Usage $0 --cmsos el8"
     exit 1
   fi
   case $CMS_IMAGE in
-    cmssw-cc6) CMS_IMAGE=cmssw-slc6;;
+    cmssw-cc6|cmssw-slc6) CMS_IMAGE=cmssw-el6;;
+    cmssw-cc7) CMS_IMAGE=cmssw-el7;;
   esac
   DOCKER_NAME="$(echo ${CMS_IMAGE} | sed 's|-|/|')"
   UNAME_M=":$(uname -m)"
