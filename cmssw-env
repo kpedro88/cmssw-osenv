@@ -65,14 +65,10 @@ if [ "X${UNPACKED_IMAGE}" = "X" ] ;then
     echo "ERROR: Missing --cmsos <image> command-line argument. Usage $0 --cmsos el8"
     exit 1
   fi
-  case $CMS_IMAGE in
-    cmssw-el5)            CMS_IMAGE=cmssw-slc5 ;;
-    cmssw-cc6|cmssw-slc6) CMS_IMAGE=cmssw-el6  ;;
-    cmssw-cc7)            CMS_IMAGE=cmssw-el7  ;;
-  esac
+  CMS_IMAGE=$(echo $CMS_IMAGE | sed -E 's/-(slc|cc)/-el/')
   DOCKER_NAME="$(echo ${CMS_IMAGE} | sed 's|-|/|')"
   UNAME_M=":$(uname -m)"
-  UNPACK_DIRS="/cvmfs/unpacked.cern.ch/registry.hub.docker.com"
+  UNPACK_DIRS="/cvmfs/unpacked.cern.ch/registry.hub.docker.com /cvmfs/grid.cern.ch/etc/grid-security"
   for dir in ${UNPACK_DIRS} ; do
     ls ${dir} >/dev/null 2>&1 || true
     for tag in "" ${UNAME_M} :latest ; do
@@ -92,14 +88,18 @@ fi
 if [ -e $UNPACKED_IMAGE ] ; then
   VALID_MOUNT_POINTS=""
   for dir in $(echo $MOUNT_POINTS | tr ',' '\n' | sort | uniq) ; do
+    hdir=$(echo $dir | sed 's|:.*||')
+    bind_dir=$(echo $dir | sed 's|.*:||')
     if [ "${IGNORE_MOUNTS}" != "" ] ; then
-      hdir=$(echo $dir | sed 's|:.*||')
       if [ $(echo " ${IGNORE_MOUNTS} " | grep " $hdir " | wc -l) -gt 0 ] ; then continue ; fi
     fi
-    bind_dir=$(echo $dir | sed 's|.*:||')
-    if [ -e ${UNPACKED_IMAGE}/${bind_dir} ] ; then
-      VALID_MOUNT_POINTS="${VALID_MOUNT_POINTS},${dir}"
+    skip_dir=true
+    if   [ -f ${hdir} -a -f ${UNPACKED_IMAGE}/${bind_dir} ] ; then
+      skip_dir=false
+    elif [ -d ${hdir} -a -d ${UNPACKED_IMAGE}/${bind_dir} ] ; then
+      skip_dir=false
     fi
+    $skip_dir || VALID_MOUNT_POINTS="${VALID_MOUNT_POINTS},${dir}"
   done
   export ${BINDPATH_ENV}=$(echo ${VALID_MOUNT_POINTS} | sed 's|^,||')
 fi
