@@ -50,7 +50,7 @@ if [ -d /cvmfs ] ; then
   done
   MOUNT_POINTS="${MOUNT_POINTS},/cvmfs,/cvmfs/grid.cern.ch/etc/grid-security/vomses:/etc/vomses,/cvmfs/grid.cern.ch/etc/grid-security:/etc/grid-security"
 fi
-for dir in /etc/tnsnames.ora /eos /build /data /afs /pool $(/bin/pwd -P | cut -d/ -f1-2) ; do
+for dir in /etc/tnsnames.ora /etc/pki/ca-trust /eos /build /data /afs /pool $(/bin/pwd -P | cut -d/ -f1-2) ; do
   [ ! -e $dir ] || MOUNT_POINTS="${MOUNT_POINTS},${dir}"
 done
 OLD_CMSOS=$(echo ${SCRAM_ARCH} | cut -d_ -f1,2)
