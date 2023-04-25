@@ -68,7 +68,7 @@ if [ "X${UNPACKED_IMAGE}" = "X" ] ;then
   CMS_IMAGE=$(echo $CMS_IMAGE | sed -E 's/-(slc|cc)/-el/')
   DOCKER_NAME="$(echo ${CMS_IMAGE} | sed 's|-|/|')"
   UNAME_M=":$(uname -m)"
-  UNPACK_DIRS="/cvmfs/unpacked.cern.ch/registry.hub.docker.com /cvmfs/grid.cern.ch/etc/grid-security"
+  UNPACK_DIRS="/cvmfs/unpacked.cern.ch/registry.hub.docker.com /cvmfs/singularity.opensciencegrid.org"
   for dir in ${UNPACK_DIRS} ; do
     ls ${dir} >/dev/null 2>&1 || true
     for tag in "" ${UNAME_M} :latest ; do
