@@ -45,7 +45,9 @@ while [ "$#" != 0 ]; do
 done
 
 if [ -d /cvmfs ] ; then
-  for repo in cms cms-ib grid projects unpacked ; do
+  cvmfs_repos="cms cms-ib grid unpacked"
+  if [ $(hostname -d | grep cern.ch |wc -l) -gt 0 ] ; then cvmfs_repos="${cvmfs_repos} projects" ; fi
+  for repo in ${cvmfs_repos} ; do
     ls /cvmfs/${repo}.cern.ch >/dev/null 2>&1 || true
   done
   MOUNT_POINTS="${MOUNT_POINTS},/cvmfs,/cvmfs/grid.cern.ch/etc/grid-security/vomses:/etc/vomses,/cvmfs/grid.cern.ch/etc/grid-security:/etc/grid-security"
