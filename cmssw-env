@@ -46,7 +46,7 @@ done
 
 if [ -d /cvmfs ] ; then
   cvmfs_repos="cms cms-ib grid unpacked"
-  if [ $(hostname -d | grep cern.ch |wc -l) -gt 0 ] ; then cvmfs_repos="${cvmfs_repos} projects" ; fi
+  case "$(hostname -d)" in cern.ch|cms) cvmfs_repos="${cvmfs_repos} projects" ;; esac
   for repo in ${cvmfs_repos} ; do
     ls /cvmfs/${repo}.cern.ch >/dev/null 2>&1 || true
   done
