@@ -56,10 +56,12 @@ for dir in /etc/tnsnames.ora /etc/pki/ca-trust /eos /build /data /afs /pool $(/b
   [ ! -e $dir ] || MOUNT_POINTS="${MOUNT_POINTS},${dir}"
 done
 OLD_CMSOS=$(echo ${SCRAM_ARCH} | cut -d_ -f1,2)
+# necessary to preserve quotes/grouping in original CMD_TO_RUN when running multiple commands through sh -c
+printf -v CMD_STR '%q ' "${CMD_TO_RUN[@]}"
 if [ -e ${THISDIR}/../cmsset_default.sh ] ; then
-  # necessary to preserve quotes/grouping in original CMD_TO_RUN when running multiple commands through sh -c
-  printf -v CMD_STR '%q ' "${CMD_TO_RUN[@]}"
   CMD_TO_RUN=("[ \"${OLD_CMSOS}\" != \"\$(${THISDIR}/cmsos)\" ] && export SCRAM_ARCH=""; source ${THISDIR}/../cmsset_default.sh >/dev/null 2>&1; ${CMD_STR}")
+else
+  CMD_TO_RUN=("${CMD_STR}")
 fi
 
 if [ "X${UNPACKED_IMAGE}" = "X" ] ;then
