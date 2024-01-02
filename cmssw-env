@@ -18,8 +18,9 @@ while [ "$#" != 0 ]; do
     -h|--help)
       HELP_ARG=""
       if [ "${CMS_IMAGE}" = "${BASE_SCRIPT}" ] ; then HELP_ARG="[--cmsos <image>] "; fi
-      echo "Usage: $0 [-h|--help] ${HELP_ARG}[extra-options] [--ignore-mount <dir1[,dir2[,...]]>] [--command-to-run|-- <command to run>]"
+      echo "Usage: $0 [-h|--help] ${HELP_ARG}[extra-options] [--ignore-mount <dir1[,dir2[,...]]>] [--command-to-run|-- <command(s)>]"
       echo "Environment variable UNPACKED_IMAGE can be set to point to either valid docker/singularity image or unpacked image path"
+      echo "If <command> includes multiple commands separated by ; or &&, or other high-precedence shell operators like >, it must be quoted"
       exit 0
       ;;
     --ignore-mount) IGNORE_MOUNTS=$(echo $2 | tr ',' ' '); shift; shift ;;
