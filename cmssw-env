@@ -32,7 +32,10 @@ while [ "$#" != 0 ]; do
       if [ $(echo "$CMS_IMAGE" | grep '/' | wc -l) -eq 0 ] ; then CMS_IMAGE="cmssw/$CMS_IMAGE"; fi
       CMS_IMAGE="$(echo ${CMS_IMAGE} | sed 's|/|-|')"
       ;;
-    --command-to-run|--)
+    --command-to-run)
+      CMD_TO_RUN="$2"; shift; shift
+      ;;
+    --)
       shift
       CMD_TO_RUN=("$@")
       break
