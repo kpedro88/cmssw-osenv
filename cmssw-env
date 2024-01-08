@@ -18,8 +18,9 @@ while [ "$#" != 0 ]; do
     -h|--help)
       HELP_ARG=""
       if [ "${CMS_IMAGE}" = "${BASE_SCRIPT}" ] ; then HELP_ARG="[--cmsos <image>] "; fi
-      echo "Usage: $0 [-h|--help] ${HELP_ARG}[extra-options] [--ignore-mount <dir1[,dir2[,...]]>] [--command-to-run|-- <command to run>]"
+      echo "Usage: $0 [-h|--help] ${HELP_ARG}[extra-options] [--ignore-mount <dir1[,dir2[,...]]>] [--command-to-run|-- <command(s)>]"
       echo "Environment variable UNPACKED_IMAGE can be set to point to either valid docker/singularity image or unpacked image path"
+      echo "If <command> includes multiple commands separated by ; or &&, or other high-precedence shell operators like >, it must be quoted"
       exit 0
       ;;
     --ignore-mount) IGNORE_MOUNTS=$(echo $2 | tr ',' ' '); shift; shift ;;
@@ -56,10 +57,15 @@ for dir in /etc/tnsnames.ora /etc/pki/ca-trust /eos /build /data /afs /pool $(/b
   [ ! -e $dir ] || MOUNT_POINTS="${MOUNT_POINTS},${dir}"
 done
 OLD_CMSOS=$(echo ${SCRAM_ARCH} | cut -d_ -f1,2)
+# necessary to preserve quotes/grouping in original CMD_TO_RUN when running multiple commands through sh -c
+printf -v CMD_STR '%q ' "${CMD_TO_RUN[@]}"
+# necessary to expand multi-command input given as quoted string
+CMD_PREF=
+if [ "${#CMD_TO_RUN[@]}" -eq 1 ]; then CMD_PREF="eval "; fi
 if [ -e ${THISDIR}/../cmsset_default.sh ] ; then
-  # necessary to preserve quotes/grouping in original CMD_TO_RUN when running multiple commands through sh -c
-  printf -v CMD_STR '%q ' "${CMD_TO_RUN[@]}"
-  CMD_TO_RUN=("[ \"${OLD_CMSOS}\" != \"\$(${THISDIR}/cmsos)\" ] && export SCRAM_ARCH=""; source ${THISDIR}/../cmsset_default.sh >/dev/null 2>&1; ${CMD_STR}")
+  CMD_TO_RUN=("[ \"${OLD_CMSOS}\" != \"\$(${THISDIR}/cmsos)\" ] && export SCRAM_ARCH=""; source ${THISDIR}/../cmsset_default.sh >/dev/null 2>&1; ${CMD_PREF}${CMD_STR}")
+else
+  CMD_TO_RUN=("${CMD_PREF}${CMD_STR}")
 fi
 
 if [ "X${UNPACKED_IMAGE}" = "X" ] ;then

@@ -1,0 +1,4 @@
+# symlinks created by tests/run.sh
+tests/cmssw-env
+/cmsset_default.sh
+tests/cmsos
