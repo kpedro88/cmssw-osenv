@@ -1,7 +1,7 @@
 #!/bin/bash -e
 EXTRA_OPTS=
 BASE_SCRIPT="cmssw-env"
-CMD_TO_RUN=("/bin/bash")
+CMD_TO_RUN=()
 CMS_IMAGE=$(basename $0)
 THISDIR=$(dirname $0)
 IGNORE_MOUNTS=""
@@ -57,14 +57,19 @@ for dir in /etc/tnsnames.ora /etc/pki/ca-trust /eos /build /data /afs /pool $(/b
   [ ! -e $dir ] || MOUNT_POINTS="${MOUNT_POINTS},${dir}"
 done
 OLD_CMSOS=$(echo ${SCRAM_ARCH} | cut -d_ -f1,2)
-# necessary to preserve quotes/grouping in original CMD_TO_RUN when running multiple commands through sh -c
-printf -v CMD_STR '%q ' "${CMD_TO_RUN[@]}"
-# necessary to expand multi-command input given as quoted string
-CMD_PREF=
-if [ "${#CMD_TO_RUN[@]}" -eq 1 ]; then CMD_PREF="eval "; fi
+INIT_FILE=""
+RESET_SCRAM_ARCH=""
 if [ -e ${THISDIR}/../cmsset_default.sh ] ; then
-  CMD_TO_RUN=("[ \"${OLD_CMSOS}\" != \"\$(${THISDIR}/cmsos)\" ] && export SCRAM_ARCH=""; source ${THISDIR}/../cmsset_default.sh >/dev/null 2>&1; ${CMD_PREF}${CMD_STR}")
-else
+  INIT_FILE="--init-file ${THISDIR}/../cmsset_default.sh"
+  RESET_SCRAM_ARCH="[ \"${OLD_CMSOS}\" != \"\$(${THISDIR}/cmsos)\" ] && export SCRAM_ARCH= ;"
+fi
+
+if [ "${#CMD_TO_RUN[@]}" -gt 0 ] ; then
+  # necessary to preserve quotes/grouping in original CMD_TO_RUN when running multiple commands through sh -c
+  printf -v CMD_STR '%q ' "${CMD_TO_RUN[@]}"
+  # necessary to expand multi-command input given as quoted string
+  CMD_PREF=
+  if [ "${#CMD_TO_RUN[@]}" -eq 1 ]; then CMD_PREF="eval "; fi
   CMD_TO_RUN=("${CMD_PREF}${CMD_STR}")
 fi
 
@@ -111,4 +116,8 @@ if [ -e $UNPACKED_IMAGE ] ; then
   done
   export ${BINDPATH_ENV}=$(echo ${VALID_MOUNT_POINTS} | sed 's|^,||')
 fi
-${CONTAINER_CMD} -s exec ${EXTRA_OPTS} $UNPACKED_IMAGE sh -c "${CMD_TO_RUN[@]}"
+if [ "${#CMD_TO_RUN[@]}" -eq 0 ] ; then
+  ${CONTAINER_CMD} -s exec ${EXTRA_OPTS} $UNPACKED_IMAGE sh -c "${RESET_SCRAM_ARCH} /bin/bash ${INIT_FILE} -i "
+else
+  ${CONTAINER_CMD} -s exec ${EXTRA_OPTS} $UNPACKED_IMAGE sh -c "${RESET_SCRAM_ARCH} /bin/bash ${INIT_FILE} -i -c '${CMD_TO_RUN[@]}'"
+fi
