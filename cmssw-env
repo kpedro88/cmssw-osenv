@@ -117,7 +117,7 @@ if [ -e $UNPACKED_IMAGE ] ; then
   export ${BINDPATH_ENV}=$(echo ${VALID_MOUNT_POINTS} | sed 's|^,||')
 fi
 if [ "${#CMD_TO_RUN[@]}" -eq 0 ] ; then
-  ${CONTAINER_CMD} -s exec ${EXTRA_OPTS} $UNPACKED_IMAGE sh -c "${RESET_SCRAM_ARCH} /bin/bash ${INIT_FILE} -i "
+  ${CONTAINER_CMD} -s exec ${EXTRA_OPTS} $UNPACKED_IMAGE sh -c "${RESET_SCRAM_ARCH} /bin/bash ${INIT_FILE} "
 else
-  ${CONTAINER_CMD} -s exec ${EXTRA_OPTS} $UNPACKED_IMAGE sh -c "${RESET_SCRAM_ARCH} /bin/bash ${INIT_FILE} -i -c '${CMD_TO_RUN[@]}'"
+  ${CONTAINER_CMD} -s exec ${EXTRA_OPTS} $UNPACKED_IMAGE sh -c "${RESET_SCRAM_ARCH} /bin/bash ${INIT_FILE} -c '${CMD_TO_RUN[@]}'"
 fi
