@@ -5,6 +5,7 @@ CMD_TO_RUN=()
 CMS_IMAGE=$(basename $0)
 THISDIR=$(dirname $0)
 IGNORE_MOUNTS=""
+SHOW_COMMAND=""
 CONTAINER_CMD="singularity"
 BINDPATH_ENV="SINGULARITY_BINDPATH"
 MOUNT_POINTS="${SINGULARITY_BINDPATH}"
@@ -18,11 +19,12 @@ while [ "$#" != 0 ]; do
     -h|--help)
       HELP_ARG=""
       if [ "${CMS_IMAGE}" = "${BASE_SCRIPT}" ] ; then HELP_ARG="[--cmsos <image>] "; fi
-      echo "Usage: $0 [-h|--help] ${HELP_ARG}[extra-options] [--ignore-mount <dir1[,dir2[,...]]>] [--command-to-run|-- <command(s)>]"
+      echo "Usage: $0 [-h|--help] ${HELP_ARG}[extra-options] [--show-command] [--ignore-mount <dir1[,dir2[,...]]>] [--command-to-run|-- <command(s)>]"
       echo "Environment variable UNPACKED_IMAGE can be set to point to either valid docker/singularity image or unpacked image path"
       echo "If <command> includes multiple commands separated by ; or &&, or other high-precedence shell operators like >, it must be quoted"
       exit 0
       ;;
+    --show-command) SHOW_COMMAND=true; shift ;;
     --ignore-mount) IGNORE_MOUNTS=$(echo $2 | tr ',' ' '); shift; shift ;;
     --cmsos)
       if [ "${CMS_IMAGE}" != "${BASE_SCRIPT}" ] ; then
@@ -127,7 +129,9 @@ if [ -e $UNPACKED_IMAGE ] ; then
   export ${BINDPATH_ENV}=$(echo ${VALID_MOUNT_POINTS} | sed 's|^,||')
 fi
 if [ "${#CMD_TO_RUN[@]}" -eq 0 ] ; then
+  if [ -n "$SHOW_COMMAND" ]; then set -x; fi
   ${CONTAINER_CMD} -s exec ${EXTRA_OPTS} $UNPACKED_IMAGE sh -c "${RESET_SCRAM_ARCH} /bin/bash ${INIT_FILE} "
 else
+  if [ -n "$SHOW_COMMAND" ]; then set -x; fi
   ${CONTAINER_CMD} -s exec ${EXTRA_OPTS} $UNPACKED_IMAGE sh -c "${RESET_SCRAM_ARCH} /bin/bash ${INIT_FILE} -c '${CMD_TO_RUN[@]}'"
 fi
