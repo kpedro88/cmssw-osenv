@@ -126,12 +126,12 @@ if [ -e $UNPACKED_IMAGE ] ; then
     fi
     $skip_dir || VALID_MOUNT_POINTS="${VALID_MOUNT_POINTS},${dir}"
   done
-  export ${BINDPATH_ENV}=$(echo ${VALID_MOUNT_POINTS} | sed 's|^,||')
+  VALID_MOUNT_POINTS=$(echo ${VALID_MOUNT_POINTS} | sed 's|^,||')
+  if [ -n "$SHOW_COMMAND" ]; then set -x; fi
+  export ${BINDPATH_ENV}=${VALID_MOUNT_POINTS}
 fi
 if [ "${#CMD_TO_RUN[@]}" -eq 0 ] ; then
-  if [ -n "$SHOW_COMMAND" ]; then set -x; fi
   ${CONTAINER_CMD} -s exec ${EXTRA_OPTS} $UNPACKED_IMAGE sh -c "${RESET_SCRAM_ARCH} /bin/bash ${INIT_FILE} "
 else
-  if [ -n "$SHOW_COMMAND" ]; then set -x; fi
   ${CONTAINER_CMD} -s exec ${EXTRA_OPTS} $UNPACKED_IMAGE sh -c "${RESET_SCRAM_ARCH} /bin/bash ${INIT_FILE} -c '${CMD_TO_RUN[@]}'"
 fi
