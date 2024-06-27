@@ -78,11 +78,9 @@ case "${KRB5FILE}" in
     ;;
 esac
 OLD_CMSOS=$(echo ${SCRAM_ARCH} | cut -d_ -f1,2)
-INIT_FILE=""
 RESET_SCRAM_ARCH=""
 if [ -e ${THISDIR}/../cmsset_default.sh ] ; then
-  INIT_FILE="--init-file ${THISDIR}/../cmsset_default.sh"
-  RESET_SCRAM_ARCH="[ \"${OLD_CMSOS}\" != \"\$(${THISDIR}/cmsos)\" ] && export SCRAM_ARCH= ;"
+  RESET_SCRAM_ARCH="[ \"${OLD_CMSOS}\" != \"\$(${THISDIR}/cmsos)\" ] && export SCRAM_ARCH= ; source ${THISDIR}/../cmsset_default.sh;"
 fi
 
 if [ "${#CMD_TO_RUN[@]}" -gt 0 ] ; then
@@ -140,7 +138,7 @@ if [ -e $UNPACKED_IMAGE ] ; then
   export ${BINDPATH_ENV}=${VALID_MOUNT_POINTS}
 fi
 if [ "${#CMD_TO_RUN[@]}" -eq 0 ] ; then
-  ${CONTAINER_CMD} -s exec ${EXTRA_OPTS} $UNPACKED_IMAGE sh -c "${RESET_SCRAM_ARCH} /bin/bash ${INIT_FILE} "
+  ${CONTAINER_CMD} -s exec ${EXTRA_OPTS} $UNPACKED_IMAGE sh -c "${RESET_SCRAM_ARCH} /bin/bash -l -i"
 else
-  ${CONTAINER_CMD} -s exec ${EXTRA_OPTS} $UNPACKED_IMAGE sh -c "${RESET_SCRAM_ARCH} /bin/bash ${INIT_FILE} -c '${CMD_TO_RUN[@]}'"
+  ${CONTAINER_CMD} -s exec ${EXTRA_OPTS} $UNPACKED_IMAGE sh -c "${RESET_SCRAM_ARCH} /bin/bash -l -i -c '${CMD_TO_RUN[@]}'"
 fi
