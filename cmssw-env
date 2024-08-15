@@ -52,13 +52,6 @@ while [ "$#" != 0 ]; do
   esac
 done
 
-if [ "${CMS_IMAGE}" = "cmssw-el6" ] ; then
-  #Always use SCRAM V2 for el6
-  #Avoid accidental usage of scram V3 if scram command ran from a project area which uses scram v3
-  export SCRAM_VERSION=V2_99_99
-  export SCRAM_NO_VERSION_SPAWN=true
-fi
-
 if [ -d /cvmfs ] ; then
   cvmfs_repos="cms cms-ib grid unpacked"
   case "$(hostname -d)" in cern.ch|cms) cvmfs_repos="${cvmfs_repos} projects" ;; esac
@@ -136,10 +129,6 @@ if [ -e $UNPACKED_IMAGE ] ; then
     fi
     $skip_dir || VALID_MOUNT_POINTS="${VALID_MOUNT_POINTS},${dir}"
   done
-  if [ -e $UNPACKED_IMAGE/usr/bin/python3 ] ; then
-    export SCRAM_VERSION=V3_99_99
-    export SCRAM_NO_VERSION_SPAWN=false
-  fi
   VALID_MOUNT_POINTS=$(echo ${VALID_MOUNT_POINTS} | sed 's|^,||')
   if [ -n "$SHOW_COMMAND" ]; then set -x; fi
   export ${BINDPATH_ENV}=${VALID_MOUNT_POINTS}
