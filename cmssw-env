@@ -52,6 +52,15 @@ while [ "$#" != 0 ]; do
   esac
 done
 
+if [ "${CMS_IMAGE}" = "cmssw-el6" ] ; then
+  #Always use SCRAM V2 for el6
+  #Avoid accidental usage of scram V3 if scram command ran from a project area which uses scram v3
+  export SCRAM_VERSION=V2_99_99
+  export SCRAM_NO_VERSION_SPAWN=true
+else
+  export SCRAM_NO_VERSION_SPAWN=false
+fi
+
 if [ -d /cvmfs ] ; then
   cvmfs_repos="cms cms-ib grid unpacked"
   case "$(hostname -d)" in cern.ch|cms) cvmfs_repos="${cvmfs_repos} projects" ;; esac
