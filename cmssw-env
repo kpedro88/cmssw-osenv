@@ -150,7 +150,7 @@ if [ -e $UNPACKED_IMAGE ] ; then
     $mount_path && VALID_MOUNT_POINTS="${VALID_MOUNT_POINTS},${dir}"
   done
   VALID_MOUNT_POINTS=$(echo ${VALID_MOUNT_POINTS} | sed 's|^,||')
-  export ${BINDPATH_ENV}=${VALID_MOUNT_POINTS}
+  ${SHOW_COMMAND} ; export ${BINDPATH_ENV}=${VALID_MOUNT_POINTS}
 fi
 
 #See https://github.com/cms-sw/cmssw-osenv/issues/17
