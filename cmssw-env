@@ -96,6 +96,7 @@ if [ -e ${THISDIR}/../cmsset_default.sh ] ; then
   RESET_SCRAM_ARCH="[ \"${OLD_CMSOS}\" != \"\$(${THISDIR}/cmsos)\" ] && export SCRAM_ARCH= ; source ${THISDIR}/../cmsset_default.sh;"
 fi
 
+FINAL_CMD_TO_RUN=
 if [ "${#CMD_TO_RUN[@]}" -gt 0 ] ; then
   # necessary to preserve quotes/grouping in original CMD_TO_RUN when running multiple commands through sh -c
   printf -v CMD_STR '%q ' "${CMD_TO_RUN[@]}"
@@ -103,6 +104,7 @@ if [ "${#CMD_TO_RUN[@]}" -gt 0 ] ; then
   CMD_PREF=
   if [ "${#CMD_TO_RUN[@]}" -eq 1 ]; then CMD_PREF="eval "; fi
   CMD_TO_RUN=("${CMD_PREF}${CMD_STR}")
+  FINAL_CMD_TO_RUN=" -c '${CMD_TO_RUN[@]}'"
 fi
 
 if [ "X${UNPACKED_IMAGE}" = "X" ] ;then
@@ -157,8 +159,4 @@ fi
 #Containers might not have all locales installed, so force set  LC_ALL=C
 export LC_ALL="C"
 
-if [ "${#CMD_TO_RUN[@]}" -eq 0 ] ; then
-  ${SHOW_COMMAND} ; ${CONTAINER_CMD} -s exec ${EXTRA_OPTS} $UNPACKED_IMAGE sh -c "${RESET_SCRAM_ARCH} /bin/bash ${INTERACTIVE}"
-else
-  ${SHOW_COMMAND} ; ${CONTAINER_CMD} -s exec ${EXTRA_OPTS} $UNPACKED_IMAGE sh -c "${RESET_SCRAM_ARCH} /bin/bash ${INTERACTIVE} -c '${CMD_TO_RUN[@]}'"
-fi
+${SHOW_COMMAND} ; ${CONTAINER_CMD} -s exec ${EXTRA_OPTS} $UNPACKED_IMAGE sh -c "${RESET_SCRAM_ARCH} /bin/bash ${INTERACTIVE}""${FINAL_CMD_TO_RUN}"
